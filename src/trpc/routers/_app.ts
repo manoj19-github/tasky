@@ -1,20 +1,21 @@
 import { z } from "zod";
-import { createTRPCRouter, baseProcedure } from "../init";
+import { createTRPCRouter, baseProcedure, protectedProcedure } from "../init";
+import prismaConfig from "@/lib/dbConfig";
 
 export const appRouter = createTRPCRouter({
-    getAllUsers: baseProcedure.input(z.object({
-        text: z.string()
-    }),
-    ).query(async (opts) => {
-        return {
-            users: [
-                { id: 1, name: "santra", email: opts.ctx.userId },
-                { id: 2, name: "santra", email: "santra@gmail.com" },
-                { id: 3, name: "santra", email: "santra@gmail.com" },
-            ]
-        }
+    getAllUsers: protectedProcedure.query( ({ctx}) => {
+        console.log("context >>>> ",{userId:ctx.auth.user});
+
+        return prismaConfig.user.findMany({
+            where:{
+                id:ctx.auth.user.id
+            }
+        })
+
     })
 });
 
 
-export  type  AppRouter = typeof appRouter;
+
+
+export type AppRouter = typeof appRouter;
